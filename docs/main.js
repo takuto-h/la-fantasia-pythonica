@@ -148,7 +148,7 @@ function startContract(selectedLang) {
     nameInput.placeholder =
         game.lang === "ja"
             ? "汝の名を記せ"
-            : "Enter your name";
+            : "Fill in your name";
 
     nameInput.value = "";
     nameInput.focus();
