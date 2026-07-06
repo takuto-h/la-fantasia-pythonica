@@ -17,6 +17,7 @@ const clickText = document.getElementById("clickText");
 const toBeContinued = document.getElementById("toBeContinued");
 
 const codeScreen = document.getElementById("codeScreen");
+const lineNumbers = document.getElementById("lineNumbers");
 const codeInput = document.getElementById("codeInput");
 const runButton = document.getElementById("runButton");
 const consoleOutput = document.getElementById("consoleText");
@@ -241,13 +242,41 @@ codeInput.addEventListener("click", (event) => {
     event.stopPropagation();
 });
 
+function updateLineNumbers() {
+    const count = codeInput.value.split("\n").length;
+
+    lineNumbers.textContent = Array.from(
+        { length: count },
+        (_, i) => i + 1
+    ).join("\n");
+}
+
+codeInput.addEventListener("scroll", () => {
+    lineNumbers.scrollTop = codeInput.scrollTop;
+});
+
 codeInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key === "Tab") {
         event.preventDefault();
-        event.stopPropagation();
-        runCode();
+
+        const start = codeInput.selectionStart;
+        const end = codeInput.selectionEnd;
+
+        codeInput.value =
+            codeInput.value.substring(0, start) +
+            "    " +
+            codeInput.value.substring(end);
+
+        codeInput.selectionStart = start + 4;
+        codeInput.selectionEnd = start + 4;
+
+        updateLineNumbers();
     }
 });
+
+codeInput.addEventListener("input", updateLineNumbers);
+
+updateLineNumbers();
 
 messageBox.addEventListener("click", nextMessage);
 
