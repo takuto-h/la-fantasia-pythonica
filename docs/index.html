@@ -7,11 +7,54 @@
 </head>
 <body>
 
-<h1>La Fantasia Pythonica</h1>
+<div id="titleScreen">
+    <h1>La Fantasia Pythonica</h1>
 
-<button id="startButton">
-    New Game
-</button>
+    <button id="startJaButton">日本語で始める</button>
+    <button id="startEnButton">Start in English</button>
+</div>
+
+<div id="contractScreen" class="hidden">
+    <h2 id="contractTitle"></h2>
+
+    <div id="parchment">
+        <p id="contractText"></p>
+
+        <input id="nameInput" type="text" autocomplete="off">
+
+        <button id="signButton"></button>
+    </div>
+</div>
+
+<div id="gameScreen" class="hidden">
+    <div id="messageBox">
+        <div id="speaker"></div>
+        <div id="message"></div>
+        <div id="clickHint">
+            <span id="clickText"></span>
+            <span id="arrow">▶︎</span>
+        </div>
+    </div>
+
+    <div id="codeScreen" class="hidden">
+        <div id="codePanel">
+            <p id="instruction"></p>
+            <textarea id="codeInput"></textarea>
+            <button id="runButton">Run</button>
+            <pre id="console"></pre>
+            <div id="successHint" class="hidden">
+                <span id="successText"></span>
+                <span id="successArrow">▶︎</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="toBeContinued" class="hidden">
+        To Be Continued...
+    </div>
+</div>
+    </div>
+</div>
 
 <script src="main.js"></script>
 
