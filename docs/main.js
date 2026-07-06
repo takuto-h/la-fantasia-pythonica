@@ -19,8 +19,9 @@ const toBeContinued = document.getElementById("toBeContinued");
 const codeScreen = document.getElementById("codeScreen");
 const codeInput = document.getElementById("codeInput");
 const runButton = document.getElementById("runButton");
-const consoleOutput = document.getElementById("console");
+const consoleOutput = document.getElementById("consoleText");
 const instruction = document.getElementById("instruction");
+const futureSightButton = document.getElementById("futureSightButton");
 
 const successHint = document.getElementById("successHint");
 const successText = document.getElementById("successText");
@@ -46,6 +47,16 @@ function nextMessage() {
             game.lang === "ja"
                 ? "name を世界へ響かせてください。"
                 : "Output name.";
+
+        futureSightButton.textContent =
+            game.lang === "ja"
+                ? "🔮 未来視"
+                : "🔮 Future Insight";
+
+        runButton.textContent =
+            game.lang === "ja"
+                ? "⚡️ 発動"
+                : "⚡️ Burst";
 
         return;
     }
@@ -187,6 +198,8 @@ function showMessage() {
         game.lang === "ja"
             ? "クリックして進む "
             : "Click to continue ";
+
+    messageBox.classList.add("clickable");
 }
 
 startJaButton.addEventListener("click", () => {
@@ -241,6 +254,13 @@ messageBox.addEventListener("click", nextMessage);
 function startQuestion() {
     game.mistakeCount = 0;
     game.questionSolved = false;
+    messageBox.classList.remove("clickable");
+
+    document.getElementById("console").classList.remove("futureSight");
+    futureSightButton.disabled = false;
+
+    codeInput.disabled = false;
+    runButton.disabled = false;
 
     codeInput.value = "";
     consoleOutput.textContent = "";
@@ -257,7 +277,41 @@ function endQuestion() {
     codeScreen.classList.add("hidden");
 }
 
+function previewCode() {
+    const code = codeInput.value.trim();
+    const consoleBox = document.getElementById("console");
+
+    consoleBox.classList.add("futureSight");
+
+    if (code === "print(name)") {
+        consoleOutput.textContent =
+            game.lang === "ja"
+                ? `🔮 未来視 🔮\n\n${game.playerName}`
+                : `🔮 Future Insight 🔮\n\n${game.playerName}`;
+        return;
+    }
+
+    if (code === "") {
+        consoleOutput.textContent =
+            game.lang === "ja"
+                ? "🔮 未来視 🔮\n\nまだ未来は見えない。"
+                : "🔮 Future Insight 🔮\n\nNo future can be seen yet.";
+        return;
+    }
+
+    consoleOutput.textContent =
+        game.lang === "ja"
+            ? "🔮 未来視 🔮\n\nこのままでは魔法が乱れそう。"
+            : "🔮 Future Insight 🔮\n\nThe spell will fail as it is.";
+}
+
+futureSightButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    previewCode();
+});
+
 function runCode() {
+    document.getElementById("console").classList.remove("futureSight");
     const code = codeInput.value.trim();
 
     if (code === "print(name)") {
@@ -274,8 +328,10 @@ function runCode() {
                 : "Click to continue ";
 
         successHint.classList.remove("hidden");
+        successHint.classList.add("clickable");
 
         codeInput.disabled = true;
+        futureSightButton.disabled = true;
         runButton.disabled = true;
 
         return;
@@ -288,8 +344,7 @@ function runCode() {
         if (game.mistakeCount === 1) {
 
             consoleOutput.textContent =
-`契約で刻んだ名前は
-変数 name に
+`契約で刻んだ名前は 変数 name に
 
 name = "${game.playerName}"
 
@@ -313,8 +368,7 @@ print(name)
         if (game.mistakeCount === 1) {
 
             consoleOutput.textContent =
-`The name you inscribed upon the contract
-now dwells within the variable name as
+`The name you inscribed upon the contract now dwells within the variable name as
 
 name = "${game.playerName}"
 
@@ -333,11 +387,9 @@ print(name)`;
 };
 
 function finishQuestion() {
+    successHint.classList.remove("clickable");
     endQuestion();
     toBeContinued.classList.remove("hidden");
 }
 
-codeScreen.addEventListener("click", () => {
-    if (!game.questionSolved) return;
-    finishQuestion();
-});
+successHint.addEventListener("click", finishQuestion);

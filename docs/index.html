@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <title>La Fantasia Pythonica</title>
     <link rel="stylesheet" href="style.css">
@@ -50,8 +51,16 @@
         <div id="codePanel">
             <p id="instruction"></p>
             <textarea id="codeInput"></textarea>
-            <button id="runButton">Run</button>
-            <pre id="console"></pre>
+            <div id="codeButtons">
+                <button id="futureSightButton"></button>
+                <button id="runButton"></button>
+            </div>
+            <pre id="futureConsole">
+                <span id="futureText"></span>
+            </pre>
+            <pre id="console">
+                <span id="consoleText"></span>
+            </pre>
             <div id="successHint" class="hidden">
                 <span id="successText"></span>
                 <span id="successArrow">▶︎</span>
