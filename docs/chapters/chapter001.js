@@ -52,7 +52,7 @@ const chapter1 = {
         {
             speaker: { ja: "{player}", en: "{player}" },
             text: {
-                ja: ".今日も響いた。やはり夢ではないのか。",
+                ja: "今日も響いた。やはり夢ではないのか。",
                 en: "It echoed again today. Perhaps it was not a dream after all."
             }
         },
