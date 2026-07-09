@@ -84,14 +84,14 @@ const chapter1 = {
                     en: "🔮 Future Insight 🔮\n\n{player}"
                 },
                 wrong: {
-                    ja: "🔮 未来視 🔮\n\nこのままでは魔法が乱れそう。",
-                    en: "🔮 Future Insight 🔮\n\nThe spell will fail as it is."
+                    ja: "🔮 未来視 🔮\n\nうまくいかない気がする。",
+                    en: "🔮 Future Insight 🔮\n\nIt doesn't seem to be working."
                 }
             },
 
             success: {
-                ja: "あなたの名前は\n ✨ {player} ✨\n魔法が世界に響きました。",
-                en: "Your name is\n ✨ {player} ✨\nYour spell echoed through the world."
+                ja: "あなたの名前は\n ✨ {player} ✨\nどこか遠くまで声が届いた気がした。",
+                en: "Your name is\n ✨ {player} ✨\nI felt as though the voice reached somewhere far away."
             },
 
             hints: [
