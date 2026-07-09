@@ -90,8 +90,8 @@ const chapter1 = {
             },
 
             success: {
-                ja: "あなたの名前は\n ✨ {player} ✨\nどこか遠くまで声が届いた気がした。",
-                en: "Your name is\n ✨ {player} ✨\nI felt as though the voice reached somewhere far away."
+                ja: "✨ {player} ✨\nどこか遠くまで声が届いた気がした。",
+                en: "✨ {player} ✨\nI felt as though the voice reached somewhere far away."
             },
 
             hints: [
