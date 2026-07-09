@@ -475,8 +475,8 @@ h1 {
     }
 
     #codePanel {
-        /* width: 94vw; */
-        width: 94dvh;
+        width: 94vw;
+        width: 94dvw;
         height: 72vh;
         height: 72dvh;
         min-height: 0;
