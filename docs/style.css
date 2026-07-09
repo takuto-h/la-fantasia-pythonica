@@ -4,13 +4,20 @@ body {
     color: white;
     font-family: serif;
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 #titleScreen,
 #contractScreen,
 #gameScreen {
     min-height: 100vh;
-    padding: 1rem;
+    min-height: 100dvh;
+    /* padding: 1rem; */
+    padding:
+        max(1rem, env(safe-area-inset-top))
+        1rem
+        max(1rem, env(safe-area-inset-bottom))
+        1rem;
     box-sizing: border-box;
 
     display: flex;
@@ -260,7 +267,7 @@ button:disabled {
 }
 
 #gameScreen {
-    width: 100vw;
+    width: 100%;
     position: relative;
 }
 
@@ -294,6 +301,7 @@ button:disabled {
     width: 80vw;
     max-width: 1000px;
     height: 70vh;
+    height: 70dvh;
 
     padding: 2rem;
     border: 1px solid #e7d3a1;
@@ -467,8 +475,10 @@ h1 {
     }
 
     #codePanel {
-        width: 94vw;
+        /* width: 94vw; */
+        width: 94dvh;
         height: 72vh;
+        height: 72dvh;
         min-height: 0;
         padding: 1rem;
     }
