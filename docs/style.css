@@ -138,6 +138,9 @@ button:disabled {
 }
 
 #titleScreen button {
+    width: 12rem;
+    max-width: 90vw;
+    max-width: 90dvw;
     margin: 0.35rem 0;
 }
 
