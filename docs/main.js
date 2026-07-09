@@ -25,6 +25,7 @@ const lineNumbers = document.getElementById("lineNumbers");
 const codeInput = document.getElementById("codeInput");
 const runButton = document.getElementById("runButton");
 const consoleOutput = document.getElementById("consoleText");
+const consoleElement = document.getElementById("console");
 const instruction = document.getElementById("instruction");
 const futureSightButton = document.getElementById("futureSightButton");
 
@@ -363,6 +364,7 @@ function startQuestion() {
 
     codeInput.value = "";
     consoleOutput.textContent = "";
+    consoleElement.scrollTop = 0;
 
     codeScreen.classList.remove("hidden");
     messageBox.classList.add("hidden");
@@ -409,15 +411,18 @@ function previewCode() {
 
     if (code === "") {
         consoleOutput.textContent = fillText(question.preview.empty[game.lang]);
+        consoleElement.scrollTop = 0;
         return;
     }
 
     if (code === question.answer) {
         consoleOutput.textContent = fillText(question.preview.correct[game.lang]);
+        consoleElement.scrollTop = 0;
         return;
     }
 
     consoleOutput.textContent = fillText(question.preview.wrong[game.lang]);
+    consoleElement.scrollTop = 0;
 }
 
 futureSightButton.addEventListener("click", (event) => {
@@ -434,6 +439,7 @@ function runCode() {
         game.questionSolved = true;
 
         consoleOutput.textContent = fillText(question.success[game.lang]);
+        consoleElement.scrollTop = 0;
 
         successText.textContent =
             game.lang === "ja"
@@ -460,6 +466,7 @@ function runCode() {
     consoleOutput.textContent = fillText(
         question.hints[hintIndex][game.lang]
     );
+    consoleElement.scrollTop = 0;
 };
 
 function finishQuestion() {
