@@ -72,20 +72,35 @@ const chapter1 = {
                 en: "Echo your name into the world."
             },
 
-            answer: "print(name)",
+            expectedOutput: "{player}",
+
+            executionMessages: {
+                loading: {
+                    ja: "古の術式 Python を召喚しています……",
+                    en: "Summoning the ancient art of Python..."
+                },
+                timeout: {
+                    ja: "術式が終わりなき環へ迷い込みました。魔力の奔流を断ち切ります。",
+                    en: "The spell has strayed into an endless circle. Its flow of magic has been severed."
+                },
+                loadError: {
+                    ja: "術式 Python との交信が途絶えています。魔力の経路を確かめ、もう一度発動してください。",
+                    en: "The link to Python has been lost. Check the arcane pathway, then cast once more."
+                },
+                previewHeading: {
+                    ja: "🔮 未来視 🔮",
+                    en: "🔮 Future Insight 🔮"
+                },
+                noOutput: {
+                    ja: "世界はまだ、何も語らない。",
+                    en: "The world remains silent."
+                }
+            },
 
             preview: {
                 empty: {
                     ja: "🔮 未来視 🔮\n\nまだ未来は見えない。",
                     en: "🔮 Future Insight 🔮\n\nNo future can be seen yet."
-                },
-                correct: {
-                    ja: "🔮 未来視 🔮\n\n{player}",
-                    en: "🔮 Future Insight 🔮\n\n{player}"
-                },
-                wrong: {
-                    ja: "🔮 未来視 🔮\n\nうまくいかない気がする。",
-                    en: "🔮 Future Insight 🔮\n\nIt doesn't seem to be working."
                 }
             },
 

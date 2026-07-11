@@ -54,6 +54,82 @@ const game = {
 
 let index = 0;
 
+const DEFAULT_EXECUTION_TIMEOUT_MS = 3000;
+const PYODIDE_LOAD_TIMEOUT_MS = 30000;
+let pythonWorker = null;
+let pythonRequestId = 0;
+
+function resetPythonWorker() {
+    if (pythonWorker) {
+        pythonWorker.terminate();
+    }
+
+    pythonWorker = null;
+}
+
+function getPythonWorker() {
+    if (!pythonWorker) {
+        pythonWorker = new Worker("python-worker.js", { type: "module" });
+    }
+
+    return pythonWorker;
+}
+
+function executePython(code, context, timeoutMs) {
+    const worker = getPythonWorker();
+    const id = ++pythonRequestId;
+
+    return new Promise((resolve, reject) => {
+        let timer = setTimeout(() => {
+            cleanup();
+            resetPythonWorker();
+            reject({ type: "load-timeout" });
+        }, PYODIDE_LOAD_TIMEOUT_MS);
+
+        function cleanup() {
+            clearTimeout(timer);
+            worker.removeEventListener("message", onMessage);
+            worker.removeEventListener("error", onWorkerError);
+        }
+
+        function onWorkerError() {
+            cleanup();
+            resetPythonWorker();
+            reject({ type: "worker-error" });
+        }
+
+        function onMessage(event) {
+            if (event.data?.id !== id) {
+                return;
+            }
+
+            if (event.data.phase === "running") {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    cleanup();
+                    resetPythonWorker();
+                    reject({ type: "execution-timeout" });
+                }, timeoutMs);
+                return;
+            }
+
+            cleanup();
+
+            if (event.data.workerError) {
+                resetPythonWorker();
+                reject({ type: "worker-error", detail: event.data.error });
+                return;
+            }
+
+            resolve(event.data);
+        }
+
+        worker.addEventListener("message", onMessage);
+        worker.addEventListener("error", onWorkerError);
+        worker.postMessage({ id, code, context });
+    });
+}
+
 function playFlash() {
     game.isBusy = true;
     hideMessageBox();
@@ -85,7 +161,10 @@ function showChapterTitle() {
     game.isBusy = true;
     hideMessageBox();
 
-    chapterNumber.textContent = `Chapter ${currentChapter.chapterNumber}`;
+    chapterNumber.textContent = uiText.chapterLabel[game.lang].replace(
+        "{number}",
+        currentChapter.chapterNumber
+    );
     chapterTitleText.textContent = `〜${currentChapter.title[game.lang]}〜`;
 
     chapterTitleScreen.classList.remove("hidden");
@@ -180,25 +259,10 @@ function showContractScreen() {
     gameScreen.classList.add("hidden");
     contractScreen.classList.remove("hidden");
 
-    contractTitle.textContent =
-        game.lang === "ja"
-            ? "始まりの契約"
-            : "The Contract of Initiation";
-
-    contractText.textContent =
-        game.lang === "ja"
-            ? "最初のページに名を刻みなさい。"
-            : "Write your name upon the first page.";
-
-    signButton.textContent =
-        game.lang === "ja"
-            ? "契約する"
-            : "Sign";
-
-    nameInput.placeholder =
-        game.lang === "ja"
-            ? "汝の名を記せ"
-            : "Fill in your name";
+    contractTitle.textContent = uiText.contractTitle[game.lang];
+    contractText.textContent = uiText.contractInstruction[game.lang];
+    signButton.textContent = uiText.signButton[game.lang];
+    nameInput.placeholder = uiText.namePlaceholder[game.lang];
 
     nameInput.value = "";
     nameInput.focus();
@@ -208,11 +272,7 @@ function signContract() {
     const name = nameInput.value.trim();
 
     if (name === "") {
-        alert(
-            game.lang === "ja"
-                ? "汝の名を記されたし。"
-                : "Please enter your name."
-        );
+        alert(uiText.nameRequired[game.lang]);
         return;
     }
 
@@ -265,10 +325,7 @@ function showMessage() {
         game.playerName
     );
 
-    clickText.textContent =
-        game.lang === "ja"
-            ? "クリックして進む "
-            : "Click to continue ";
+    clickText.textContent = uiText.continue[game.lang];
 
     messageBox.classList.remove("hidden");
     messageBox.classList.add("clickable");
@@ -387,41 +444,83 @@ function startQuestionById(questionId) {
 
     instruction.textContent = question.instruction[game.lang];
 
-    futureSightButton.textContent =
-        game.lang === "ja"
-            ? "🔮 未来視"
-            : "🔮 Future Insight";
-
-    runButton.textContent =
-        game.lang === "ja"
-            ? "⚡️ 発動"
-            : "⚡️ Cast";
+    futureSightButton.textContent = uiText.futureSightButton[game.lang];
+    runButton.textContent = uiText.runButton[game.lang];
 }
 
 function endQuestion() {
     codeScreen.classList.add("hidden");
 }
 
-function previewCode() {
-    const code = codeInput.value.trim();
+function setExecutionBusy(isBusy) {
+    codeInput.disabled = isBusy;
+    futureSightButton.disabled = isBusy;
+    runButton.disabled = isBusy;
+}
+
+function executionStatusText(type) {
+    const question = currentChapter.questions[game.currentQuestion];
+    return question.executionMessages[type][game.lang];
+}
+
+function formatExecutionResult(result) {
+    return [result.stdout, result.stderr]
+        .filter((text) => text !== "")
+        .join(result.stdout && result.stderr ? "\n" : "");
+}
+
+function normalizeOutput(output) {
+    return output.replace(/\r?\n$/, "");
+}
+
+function getQuestionContext() {
+    return { name: game.playerName };
+}
+
+async function executeCurrentCode(code, question) {
+    setExecutionBusy(true);
+    consoleOutput.textContent = executionStatusText("loading");
+    consoleElement.scrollTop = 0;
+
+    try {
+        return await executePython(
+            code,
+            getQuestionContext(),
+            question.timeoutMs ?? DEFAULT_EXECUTION_TIMEOUT_MS
+        );
+    } finally {
+        if (!game.questionSolved) {
+            setExecutionBusy(false);
+            codeInput.focus();
+        }
+    }
+}
+
+async function previewCode() {
+    const code = codeInput.value;
     const consoleBox = document.getElementById("console");
     const question = currentChapter.questions[game.currentQuestion];
 
     consoleBox.classList.add("futureSight");
 
-    if (code === "") {
+    if (code.trim() === "") {
         consoleOutput.textContent = fillText(question.preview.empty[game.lang]);
         consoleElement.scrollTop = 0;
         return;
     }
 
-    if (code === question.answer) {
-        consoleOutput.textContent = fillText(question.preview.correct[game.lang]);
-        consoleElement.scrollTop = 0;
-        return;
-    }
+    try {
+        const result = await executeCurrentCode(code, question);
+        const output = formatExecutionResult(result);
+        const heading = question.executionMessages.previewHeading[game.lang];
+        const noOutput = question.executionMessages.noOutput[game.lang];
 
-    consoleOutput.textContent = fillText(question.preview.wrong[game.lang]);
+        consoleOutput.textContent = `${heading}\n\n${output || noOutput}`;
+    } catch (error) {
+        consoleOutput.textContent = executionStatusText(
+            error.type === "execution-timeout" ? "timeout" : "loadError"
+        );
+    }
     consoleElement.scrollTop = 0;
 }
 
@@ -430,32 +529,47 @@ futureSightButton.addEventListener("click", (event) => {
     previewCode();
 });
 
-function runCode() {
+async function runCode() {
     document.getElementById("console").classList.remove("futureSight");
-    const code = codeInput.value.trim();
+    const code = codeInput.value;
     const question = currentChapter.questions[game.currentQuestion];
+    let result;
 
-    if (code === question.answer) {
+    try {
+        result = await executeCurrentCode(code, question);
+    } catch (error) {
+        if (error.type === "execution-timeout") {
+            handleWrongAnswer(executionStatusText("timeout"));
+        } else {
+            consoleOutput.textContent = executionStatusText("loadError");
+            consoleElement.scrollTop = 0;
+        }
+        return;
+    }
+
+    const expectedOutput = fillText(question.expectedOutput);
+
+    if (!result.error && normalizeOutput(result.stdout) === expectedOutput) {
         game.questionSolved = true;
 
         consoleOutput.textContent = fillText(question.success[game.lang]);
         consoleElement.scrollTop = 0;
 
-        successText.textContent =
-            game.lang === "ja"
-                ? "クリックして進む "
-                : "Click to continue ";
+        successText.textContent = uiText.continue[game.lang];
 
         successHint.classList.remove("hidden");
         successHint.classList.add("clickable");
 
-        codeInput.disabled = true;
-        futureSightButton.disabled = true;
-        runButton.disabled = true;
+        setExecutionBusy(true);
 
         return;
     }
 
+    handleWrongAnswer(formatExecutionResult(result));
+}
+
+function handleWrongAnswer(executionOutput) {
+    const question = currentChapter.questions[game.currentQuestion];
     game.mistakeCount++;
 
     const hintIndex = Math.min(
@@ -463,11 +577,12 @@ function runCode() {
         question.hints.length - 1
     );
 
-    consoleOutput.textContent = fillText(
-        question.hints[hintIndex][game.lang]
-    );
+    const hint = fillText(question.hints[hintIndex][game.lang]);
+    consoleOutput.textContent = executionOutput
+        ? `${executionOutput}\n\n${hint}`
+        : hint;
     consoleElement.scrollTop = 0;
-};
+}
 
 function finishQuestion() {
     game.questionSolved = false;
