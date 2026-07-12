@@ -37,32 +37,32 @@ const uiText = {
     },
     executionErrors: {
         unclosed: {
-            ja: "{line}行目付近に、開かれたままのものがある......？",
-            en: "Something seems to have been left open near line {line}...?"
+            ja: "{line} 行目付近に、閉じられていないものがある......？",
+            en: "Something appears to have been left unclosed near line {line}...?"
         },
         indentation: {
-            ja: "{line}行目付近で、術式の階層が乱れている......。",
-            en: "Near line {line}, the layers of the spell have fallen out of alignment..."
+            ja: "{line} 行目付近で、術式の階層が乱れている......。",
+            en: "Near line {line}, the layers of the spell seem to be out of alignment..."
         },
         name: {
-            ja: "{line}行目付近で、まだ名を持たぬものを呼んだ気がする......。",
-            en: "Near line {line}, I sense a call to something that has not yet been given a name..."
+            ja: "{line} 行目付近で、まだ名を持たぬものを呼んでしまった気がする......。",
+            en: "Near line {line}, I feel I tried to call something that has not yet been given a name..."
         },
         type: {
-            ja: "{line}行目付近で、異なる性質の魔力が噛み合っていない......。",
-            en: "Near line {line}, powers of different natures refuse to flow together..."
+            ja: "{line} 行目付近で、魔力の性質が噛み合っていない......。",
+            en: "Near line {line}, the natures of the mana do not seem to be compatible..."
         },
         zeroDivision: {
-            ja: "{line}行目付近で、無へ分かとうとした......？",
-            en: "Near line {line}, was I trying to divide by the void...?"
+            ja: "{line} 行目付近で、零で割ろうとした......？",
+            en: "Near line {line}, did I try to divide by zero...?"
         },
         generic: {
-            ja: "{line}行目付近に、魔力の流れの乱れを感じる。",
-            en: "I sense a disturbance in the flow of magic near line {line}."
+            ja: "{line} 行目付近で、魔力の流れが乱れているように感じる。",
+            en: "I sense a disturbance in the flow of mana near line {line}."
         },
         unknown: {
-            ja: "どこかに、魔力の流れの乱れを感じる。",
-            en: "Somewhere, I sense a disturbance in the flow of magic."
+            ja: "どこかに、魔力の乱れを感じる。",
+            en: "Somewhere, I sense a disturbance in the flow of mana."
         }
     }
 };
