@@ -76,16 +76,16 @@ const chapter1 = {
 
             executionMessages: {
                 loading: {
-                    ja: "古の術式 Python を召喚しています……",
-                    en: "Summoning the ancient art of Python..."
+                    ja: "古の知識体系への接続を試みています......",
+                    en: "Attempting to connect to an ancient body of knowledge..."
                 },
                 timeout: {
-                    ja: "術式が終わりなき環へ迷い込みました。魔力の奔流を断ち切ります。",
-                    en: "The spell has strayed into an endless circle. Its flow of magic has been severed."
+                    ja: "術式が終わりなき環へ迷い込みました。魔力の奔流を断ち切ります……",
+                    en: "The spell woven from the ancient system of magic has become trapped in an endless loop. Severing the flow of mana..."
                 },
                 loadError: {
-                    ja: "術式 Python との交信が途絶えています。魔力の経路を確かめ、もう一度発動してください。",
-                    en: "The link to Python has been lost. Check the arcane pathway, then cast once more."
+                    ja: "古の魔法体系との交信が途絶えています。魔力の経路を確かめ、もう一度接続を試みてください。",
+                    en: "Communication with the ancient system of magic has been lost. Check the flow of mana and try establishing the connection again."
                 },
                 previewHeading: {
                     ja: "🔮 未来視 🔮",
