@@ -1,3 +1,5 @@
+import { createCodeEditor } from "./code-editor.js";
+
 const startJaButton = document.getElementById("startJaButton");
 const startEnButton = document.getElementById("startEnButton");
 
@@ -21,8 +23,8 @@ const clickText = document.getElementById("clickText");
 const toBeContinued = document.getElementById("toBeContinued");
 
 const codeScreen = document.getElementById("codeScreen");
-const lineNumbers = document.getElementById("lineNumbers");
-const codeInput = document.getElementById("codeInput");
+const codeEditorHost = document.getElementById("codeEditor");
+const codeEditor = createCodeEditor(codeEditorHost);
 const runButton = document.getElementById("runButton");
 const consoleOutput = document.getElementById("consoleText");
 const consoleElement = document.getElementById("console");
@@ -214,7 +216,7 @@ document.addEventListener("keydown", (event) => {
         return;
     }
 
-    if (event.target === codeInput || event.target === nameInput) {
+    if (event.target === nameInput) {
         return;
     }
 
@@ -366,46 +368,6 @@ runButton.addEventListener("click", (event) => {
     runCode();
 });
 
-codeInput.addEventListener("click", (event) => {
-    event.stopPropagation();
-});
-
-function updateLineNumbers() {
-    const count = codeInput.value.split("\n").length;
-
-    lineNumbers.textContent = Array.from(
-        { length: count },
-        (_, i) => i + 1
-    ).join("\n");
-}
-
-codeInput.addEventListener("scroll", () => {
-    lineNumbers.scrollTop = codeInput.scrollTop;
-});
-
-codeInput.addEventListener("keydown", (event) => {
-    if (event.key === "Tab") {
-        event.preventDefault();
-
-        const start = codeInput.selectionStart;
-        const end = codeInput.selectionEnd;
-
-        codeInput.value =
-            codeInput.value.substring(0, start) +
-            "    " +
-            codeInput.value.substring(end);
-
-        codeInput.selectionStart = start + 4;
-        codeInput.selectionEnd = start + 4;
-
-        updateLineNumbers();
-    }
-});
-
-codeInput.addEventListener("input", updateLineNumbers);
-
-updateLineNumbers();
-
 messageBox.addEventListener("click", nextMessage);
 
 function startQuestion() {
@@ -416,17 +378,18 @@ function startQuestion() {
     document.getElementById("console").classList.remove("futureSight");
     futureSightButton.disabled = false;
 
-    codeInput.disabled = false;
+    codeEditor.setDisabled(false);
     runButton.disabled = false;
 
-    codeInput.value = "";
+    codeEditor.setValue("");
     consoleOutput.textContent = "";
     consoleElement.scrollTop = 0;
 
     codeScreen.classList.remove("hidden");
     messageBox.classList.add("hidden");
 
-    codeInput.focus();
+    codeEditor.refresh();
+    codeEditor.focus();
 
     successHint.classList.add("hidden");
 }
@@ -453,7 +416,7 @@ function endQuestion() {
 }
 
 function setExecutionBusy(isBusy) {
-    codeInput.disabled = isBusy;
+    codeEditor.setDisabled(isBusy);
     futureSightButton.disabled = isBusy;
     runButton.disabled = isBusy;
 }
@@ -505,13 +468,13 @@ async function executeCurrentCode(code, question) {
     } finally {
         if (!game.questionSolved) {
             setExecutionBusy(false);
-            codeInput.focus();
+            codeEditor.focus();
         }
     }
 }
 
 async function previewCode() {
-    const code = codeInput.value;
+    const code = codeEditor.getValue();
     const consoleBox = document.getElementById("console");
     const question = currentChapter.questions[game.currentQuestion];
 
@@ -545,7 +508,7 @@ futureSightButton.addEventListener("click", (event) => {
 
 async function runCode() {
     document.getElementById("console").classList.remove("futureSight");
-    const code = codeInput.value;
+    const code = codeEditor.getValue();
     const question = currentChapter.questions[game.currentQuestion];
     let result;
 

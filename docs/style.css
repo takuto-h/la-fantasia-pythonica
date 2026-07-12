@@ -324,55 +324,61 @@ button:disabled {
 }
 
 #editor {
-    display: flex;
     width: 100%;
     flex: 1;
 
     min-height: 220px;
 
-    border: 1px solid #555;
+    background: #151821;
+    border: 1px solid #7b735f;
+    border-radius: 6px;
+    box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
     overflow: hidden;
 }
 
-#lineNumbers {
-    margin: 0;
-    width: 2.2rem;
-    padding: 1rem 0.25rem;
-
-    line-height: 1.4;
-
-    background: #111;
-    color: gray;
-
-    text-align: right;
-    user-select: none;
-
-    font-family: monospace;
-    font-size: clamp(16px, 2vw, 20px);
-
-    overflow: hidden;
+#codeEditor {
+    width: 100%;
+    height: 100%;
 }
 
-#codeInput {
-    flex: 1;
-    min-height: 0px;
+/* Keep the editor legible even if CodeMirror's generated theme styles load late. */
+#codeEditor .cm-editor,
+#codeEditor .cm-scroller {
+    height: 100%;
+    background: #151821;
+    color: #f3e7c0;
+}
+
+#codeEditor .cm-scroller {
     overflow: auto;
-    line-height: 1.4;
-    white-space: pre;
-
-    border: none;
-    outline: none;
-
-    resize: none;
-
-    /* height: clamp(120px, 22vh, 220px); */
-    /* height: 100%; */
-    box-sizing: border-box;
-
     font-family: monospace;
     font-size: clamp(16px, 2vw, 20px);
+    line-height: 1.4;
+}
 
+#codeEditor .cm-content {
+    min-height: 100%;
     padding: 1rem;
+    box-sizing: border-box;
+    caret-color: #ffe59a;
+    text-align: left;
+}
+
+#codeEditor .cm-placeholder {
+    color: #a49e8c;
+    font-style: italic;
+    pointer-events: none;
+}
+
+#editor:focus-within {
+    border-color: #c8a96b;
+    box-shadow:
+        inset 0 0 18px rgba(0, 0, 0, 0.45),
+        0 0 10px rgba(200, 169, 107, 0.24);
+}
+
+#codeEditor .cm-editor--disabled {
+    opacity: 0.65;
 }
 
 #console {
@@ -567,10 +573,6 @@ h1 {
     #editor {
         flex: none;
         height: 220px;
-        min-height: 0;
-    }
-
-    #codeInput {
         min-height: 0;
     }
 
