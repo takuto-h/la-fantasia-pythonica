@@ -49,15 +49,24 @@ const game = {
     mistakeCount: 0,
     currentQuestion: null,
     questionSolved: false,
-    isBusy: false
+    isBusy: false,
+    sessionId: 0
 };
 
 let index = 0;
+let sceneTimer = null;
 
 const DEFAULT_EXECUTION_TIMEOUT_MS = 3000;
 const PYODIDE_LOAD_TIMEOUT_MS = 30000;
 let pythonWorker = null;
 let pythonRequestId = 0;
+
+function clearSceneTimer() {
+    if (sceneTimer !== null) {
+        clearTimeout(sceneTimer);
+        sceneTimer = null;
+    }
+}
 
 function resetPythonWorker() {
     if (pythonWorker) {
@@ -141,7 +150,9 @@ function playFlash() {
 
     flashOverlay.classList.add("flash");
 
-    setTimeout(() => {
+    clearSceneTimer();
+    sceneTimer = setTimeout(() => {
+        sceneTimer = null;
         flashOverlay.classList.add("hidden");
         flashOverlay.classList.remove("flash");
 
@@ -174,7 +185,9 @@ function showChapterTitle() {
 
     chapterTitleScreen.classList.add("show");
 
-    setTimeout(() => {
+    clearSceneTimer();
+    sceneTimer = setTimeout(() => {
+        sceneTimer = null;
         chapterTitleScreen.classList.add("hidden");
         chapterTitleScreen.classList.remove("show");
 
@@ -209,6 +222,16 @@ function nextMessage() {
 }
 
 document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && isChapterMenuOpen()) {
+        event.preventDefault();
+        closeChapterMenu();
+        return;
+    }
+
+    if (isChapterMenuOpen()) {
+        return;
+    }
+
     if (game.isBusy) {
         event.preventDefault();
         return;
@@ -245,6 +268,7 @@ document.addEventListener("keydown", (event) => {
 
 function startContract(selectedLang) {
     game.lang = selectedLang;
+    document.documentElement.lang = selectedLang;
 
     titleScreen.classList.add("hidden");
 
@@ -277,6 +301,12 @@ function signContract() {
     }
 
     game.playerName = name;
+    window.dispatchEvent(new CustomEvent("player-profile-saved", {
+        detail: {
+            lang: game.lang,
+            playerName: game.playerName
+        }
+    }));
 
     contractScreen.classList.add("hidden");
     gameScreen.classList.remove("hidden");
@@ -492,6 +522,8 @@ function getQuestionContext() {
 }
 
 async function executeCurrentCode(code, question) {
+    const sessionId = game.sessionId;
+
     setExecutionBusy(true);
     consoleOutput.textContent = executionStatusText("loading");
     consoleElement.scrollTop = 0;
@@ -503,7 +535,7 @@ async function executeCurrentCode(code, question) {
             question.timeoutMs ?? DEFAULT_EXECUTION_TIMEOUT_MS
         );
     } finally {
-        if (!game.questionSolved) {
+        if (sessionId === game.sessionId && !game.questionSolved) {
             setExecutionBusy(false);
             codeInput.focus();
         }
@@ -511,6 +543,7 @@ async function executeCurrentCode(code, question) {
 }
 
 async function previewCode() {
+    const sessionId = game.sessionId;
     const code = codeInput.value;
     const consoleBox = document.getElementById("console");
     const question = currentChapter.questions[game.currentQuestion];
@@ -525,12 +558,21 @@ async function previewCode() {
 
     try {
         const result = await executeCurrentCode(code, question);
+
+        if (sessionId !== game.sessionId) {
+            return;
+        }
+
         const output = formatExecutionResult(result);
         const heading = question.executionMessages.previewHeading[game.lang];
         const noOutput = question.executionMessages.noOutput[game.lang];
 
         consoleOutput.textContent = `${heading}\n\n${output || noOutput}`;
     } catch (error) {
+        if (sessionId !== game.sessionId) {
+            return;
+        }
+
         consoleOutput.textContent = executionStatusText(
             error.type === "execution-timeout" ? "timeout" : "loadError"
         );
@@ -544,6 +586,7 @@ futureSightButton.addEventListener("click", (event) => {
 });
 
 async function runCode() {
+    const sessionId = game.sessionId;
     document.getElementById("console").classList.remove("futureSight");
     const code = codeInput.value;
     const question = currentChapter.questions[game.currentQuestion];
@@ -552,12 +595,20 @@ async function runCode() {
     try {
         result = await executeCurrentCode(code, question);
     } catch (error) {
+        if (sessionId !== game.sessionId) {
+            return;
+        }
+
         if (error.type === "execution-timeout") {
             handleWrongAnswer();
         } else {
             consoleOutput.textContent = executionStatusText("loadError");
             consoleElement.scrollTop = 0;
         }
+        return;
+    }
+
+    if (sessionId !== game.sessionId) {
         return;
     }
 

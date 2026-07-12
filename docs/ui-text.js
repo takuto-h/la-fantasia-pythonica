@@ -27,6 +27,26 @@ const uiText = {
         ja: "クリックして進む ",
         en: "Click to continue "
     },
+    chapterMenu: {
+        ja: "章を選ぶ",
+        en: "Chapters"
+    },
+    chapterMenuButton: {
+        ja: "章メニューを開く",
+        en: "Open chapter menu"
+    },
+    close: {
+        ja: "閉じる",
+        en: "Close"
+    },
+    chapterMenuProfileRequired: {
+        ja: "契約を結ぶと、章を選べます。",
+        en: "Sign the contract to choose a chapter."
+    },
+    chapterMenuProfileReady: {
+        ja: "契約者の名前: {player}",
+        en: "Contractor's name: {player}"
+    },
     futureSightButton: {
         ja: "🔮 未来視",
         en: "🔮 Future Insight"

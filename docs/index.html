@@ -10,6 +10,32 @@
 <body>
 
 <div id="flashOverlay" class="hidden"></div>
+<button
+    id="chapterMenuButton"
+    type="button"
+    aria-controls="chapterMenuOverlay"
+    aria-expanded="false"
+>
+    <span aria-hidden="true">☰</span>
+    <span class="srOnly" id="chapterMenuButtonText"></span>
+</button>
+
+<div id="chapterMenuOverlay" class="hidden">
+    <aside
+        id="chapterMenu"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="chapterMenuTitle"
+    >
+        <div id="chapterMenuHeader">
+            <h2 id="chapterMenuTitle"></h2>
+            <button id="chapterMenuCloseButton" type="button" aria-label="Close">×</button>
+        </div>
+        <p id="chapterMenuStatus"></p>
+        <nav id="chapterLinks" aria-label="Chapters"></nav>
+    </aside>
+</div>
+
 <div id="titleScreen">
     <h1>La Fantasia Pythonica</h1>
 
@@ -84,6 +110,7 @@
 <script src="chapters/chapter001.js"></script>
 <script src="chapters/chapter002.js"></script>
 <script src="main.js"></script>
+<script src="chapter-menu.js"></script>
 
 </body>
 </html>
