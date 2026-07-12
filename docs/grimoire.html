@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>魔導書 | La Fantasia Pythonica</title>
+
+    <link rel="stylesheet" href="./css/grimoire.css">
+</head>
+
+<body>
+    <div class="language-switch">
+        <button id="jaButton" type="button">
+            日本語
+        </button>
+
+        <button id="enButton" type="button">
+            English
+        </button>
+    </div>
+
+    <header class="page-header">
+        <a
+            id="backButton"
+            href="./index.html"
+            class="back-button"
+        >
+            ← 戻る
+        </a>
+
+        <h1 id="pageTitle">魔導書</h1>
+    </header>
+
+    <div id="languageButtons" class="language-buttons hidden">
+        <p>Language / 言語</p>
+
+        <div class="language-button-row">
+            <button id="jaButton" type="button">
+                日本語
+            </button>
+
+            <button id="enButton" type="button">
+                English
+            </button>
+        </div>
+    </div>
+
+    <main class="grimoire-layout">
+        <nav id="pageList" class="page-list"></nav>
+
+        <article id="pageContent" class="page-content">
+            <p>左の頁を選んでください。</p>
+        </article>
+    </main>
+
+    <script
+        type="module"
+        src="./js/grimoire.js"
+    ></script>
+</body>
+</html>

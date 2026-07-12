@@ -4,10 +4,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <title>La Fantasia Pythonica</title>
-    <link rel="icon" href="assets/icons/favicon_pythonica.ico" type="image/x-icon">
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="./assets/icons/favicon_pythonica.ico" type="image/x-icon">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/game.css">
 </head>
 <body>
+
+<button
+    id="menuButton"
+    class="menu-button"
+    type="button"
+    aria-label="Open menu"
+    aria-expanded="false"
+>
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<div
+    id="menuOverlay"
+    class="menu-overlay hidden"
+>
+    <nav
+        id="sideMenu"
+        class="side-menu"
+        aria-label="Main menu"
+    >
+        <div class="side-menu-header">
+            <h2 id="menuTitle">Menu</h2>
+
+            <button
+                id="closeMenuButton"
+                class="close-menu-button"
+                type="button"
+                aria-label="Close menu"
+            >
+                ×
+            </button>
+        </div>
+
+        <button
+            id="memoryButton"
+            class="menu-item menu-item-button"
+            type="button"
+        >
+            Memory
+        </button>
+
+        <a
+            id="grimoireLink"
+            class="menu-item"
+            href="./grimoire.html"
+        >
+            Grimoire / 魔導書
+        </a>
+    </nav>
+</div>
+
+<div
+    id="memoryModal"
+    class="memory-modal hidden"
+>
+    <section
+        class="memory-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="memoryTitle"
+    >
+        <header class="memory-header">
+            <h2 id="memoryTitle">Memory</h2>
+
+            <button
+                id="closeMemoryButton"
+                class="memory-close-button"
+                type="button"
+                aria-label="Close"
+            >
+                ×
+            </button>
+        </header>
+
+        <p id="memoryDescription" class="memory-description">
+            魔導書に刻まれた記憶
+        </p>
+
+        <div id="memoryChapterList" class="memory-chapter-list"></div>
+    </section>
+</div>
+
+<div
+    id="replayQuestionModal"
+    class="replay-question-modal hidden"
+>
+    <section
+        class="replay-question-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="replayQuestionText"
+    >
+        <p id="replayQuestionText"></p>
+
+        <div class="replay-question-actions">
+            <button
+                id="playQuestionButton"
+                type="button"
+            ></button>
+
+            <button
+                id="skipQuestionButton"
+                type="button"
+            ></button>
+        </div>
+    </section>
+</div>
 
 <div id="flashOverlay" class="hidden"></div>
 <div id="titleScreen">
@@ -79,11 +189,11 @@
     <div id="chapterNumber"></div>
     <div id="chapterTitleText"></div>
 </div>
-<script src="ui-text.js"></script>
-<script src="chapters/chapter000.js"></script>
-<script src="chapters/chapter001.js"></script>
-<script src="chapters/chapter002.js"></script>
-<script src="main.js"></script>
+<script src="./js/ui-text.js"></script>
+<script src="./js/chapters/chapter000.js"></script>
+<script src="./js/chapters/chapter001.js"></script>
+<script src="./js/chapters/chapter002.js"></script>
+<script src="./js/main.js"></script>
 
 </body>
 </html>

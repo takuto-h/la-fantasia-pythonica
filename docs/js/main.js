@@ -6,6 +6,13 @@ const contractScreen = document.getElementById("contractScreen");
 const gameScreen = document.getElementById("gameScreen");
 const messageBox = document.getElementById("messageBox");
 
+const menuButton = document.getElementById("menuButton");
+const menuOverlay = document.getElementById("menuOverlay");
+const sideMenu = document.getElementById("sideMenu");
+const closeMenuButton = document.getElementById("closeMenuButton");
+const menuTitle = document.getElementById("menuTitle");
+const grimoireLink = document.getElementById("grimoireLink");
+
 const chapterTitleScreen = document.getElementById("chapterTitleScreen");
 const chapterNumber = document.getElementById("chapterNumber");
 const chapterTitleText = document.getElementById("chapterTitleText");
@@ -34,6 +41,18 @@ const successText = document.getElementById("successText");
 
 const flashOverlay = document.getElementById("flashOverlay");
 
+const replayQuestionModal = document.getElementById("replayQuestionModal");
+const replayQuestionText = document.getElementById("replayQuestionText");
+const playQuestionButton = document.getElementById("playQuestionButton");
+const skipQuestionButton = document.getElementById("skipQuestionButton");
+
+const memoryButton = document.getElementById("memoryButton");
+const memoryModal = document.getElementById("memoryModal");
+const memoryTitle = document.getElementById("memoryTitle");
+const memoryDescription = document.getElementById("memoryDescription");
+const memoryChapterList = document.getElementById("memoryChapterList");
+const closeMemoryButton = document.getElementById("closeMemoryButton");
+
 let currentChapter = chapter0;
 let chapterIndex = 0;
 
@@ -43,14 +62,22 @@ const chapters = [
     chapter2
 ];
 
+const settings = {
+    language: localStorage.getItem("language"),
+    playerName: localStorage.getItem("playerName") || ""
+};
+
 const game = {
-    lang: "ja",
+    lang: null,
     playerName: "",
     mistakeCount: 0,
     currentQuestion: null,
     questionSolved: false,
-    isBusy: false
+    isBusy: false,
+    isReplay: false
 };
+
+let pendingReplayQuestionId = null;
 
 let index = 0;
 
@@ -69,7 +96,7 @@ function resetPythonWorker() {
 
 function getPythonWorker() {
     if (!pythonWorker) {
-        pythonWorker = new Worker("python-worker.js", { type: "module" });
+        pythonWorker = new Worker("./js/python-worker.js", { type: "module" });
     }
 
     return pythonWorker;
@@ -152,6 +179,67 @@ function playFlash() {
     }, 2500);
 }
 
+function openMenu() {
+    menuOverlay.classList.remove("hidden");
+    menuButton.setAttribute("aria-expanded", "true");
+}
+
+function closeMenu() {
+    menuOverlay.classList.add("hidden");
+    menuButton.setAttribute("aria-expanded", "false");
+}
+
+function updateMenuLanguage() {
+    if (game.lang === "ja") {
+        menuTitle.textContent = "Menu";
+        grimoireLink.textContent = "魔導書";
+
+        menuButton.setAttribute("aria-label", "Open Menu");
+        closeMenuButton.setAttribute("aria-label", "Close Menu");
+        return;
+    }
+
+    if (game.lang === "en") {
+        menuTitle.textContent = "Menu";
+        grimoireLink.textContent = "Grimoire";
+
+        menuButton.setAttribute("aria-label", "Open Menu");
+        closeMenuButton.setAttribute("aria-label", "Close Menu");
+        return;
+    }
+
+    menuTitle.textContent = "Menu";
+    grimoireLink.textContent = "Grimoire / 魔導書";
+
+    menuButton.setAttribute("aria-label", "Menu");
+    closeMenuButton.setAttribute(
+        "aria-label",
+        "Close Menu"
+    );
+}
+
+menuButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openMenu();
+});
+
+closeMenuButton.addEventListener("click", closeMenu);
+
+sideMenu.addEventListener("click", (event) => {
+    event.stopPropagation();
+});
+
+menuOverlay.addEventListener("click", closeMenu);
+
+document.addEventListener("keydown", (event) => {
+    if (
+        event.key === "Escape" &&
+        !menuOverlay.classList.contains("hidden")
+    ) {
+        closeMenu();
+    }
+});
+
 function hideMessageBox() {
     messageBox.classList.add("hidden");
     messageBox.classList.remove("clickable");
@@ -189,6 +277,22 @@ function nextMessage() {
     index++;
 
     if (index >= currentChapter.scenario.length) {
+        markChapterCleared(
+            Number(currentChapter.chapterNumber)
+        );
+
+        if (game.isReplay) {
+            game.isReplay = false;
+
+            hideMessageBox();
+            codeScreen.classList.add("hidden");
+            gameScreen.classList.add("hidden");
+            titleScreen.classList.remove("hidden");
+
+            openMemory();
+            return;
+        }
+
         chapterIndex++;
 
         if (chapterIndex >= chapters.length) {
@@ -245,6 +349,11 @@ document.addEventListener("keydown", (event) => {
 
 function startContract(selectedLang) {
     game.lang = selectedLang;
+    settings.language = selectedLang;
+
+    localStorage.setItem("language", selectedLang);
+
+    updateMenuLanguage();
 
     titleScreen.classList.add("hidden");
 
@@ -277,6 +386,7 @@ function signContract() {
     }
 
     game.playerName = name;
+    localStorage.setItem("playerName", name);
 
     contractScreen.classList.add("hidden");
     gameScreen.classList.remove("hidden");
@@ -308,7 +418,17 @@ function showMessage() {
 
     if (currentMessage.type === "question") {
         hideMessageBox();
-        startQuestionById(currentMessage.questionId);
+
+        if (game.isReplay) {
+            showReplayQuestionChoice(
+                currentMessage.questionId
+            );
+        } else {
+            startQuestionById(
+                currentMessage.questionId
+            );
+        }
+
         return;
     }
 
@@ -610,3 +730,358 @@ function finishQuestion() {
 }
 
 successHint.addEventListener("click", finishQuestion);
+
+const savedLanguage = localStorage.getItem("language");
+
+if (savedLanguage === "ja" || savedLanguage === "en") {
+    game.lang = savedLanguage;
+}
+
+updateMenuLanguage();
+
+const CLEARED_CHAPTERS_KEY = "clearedChapters";
+
+function getClearedChapters() {
+    const raw = localStorage.getItem(CLEARED_CHAPTERS_KEY);
+
+    if (!raw) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(raw);
+
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+
+        return parsed.filter(Number.isInteger);
+    } catch {
+        return [];
+    }
+}
+
+function markChapterCleared(chapterNumber) {
+    const cleared = getClearedChapters();
+
+    if (!cleared.includes(chapterNumber)) {
+        cleared.push(chapterNumber);
+        cleared.sort((a, b) => a - b);
+
+        localStorage.setItem(
+            CLEARED_CHAPTERS_KEY,
+            JSON.stringify(cleared)
+        );
+    }
+}
+
+function showReplayQuestionChoice(questionId) {
+    pendingReplayQuestionId = questionId;
+
+    replayQuestionText.textContent =
+        game.lang === "ja"
+            ? "魔法の練習をしておこうかな？"
+            : "Should I try the exercise of the magic?";
+
+    playQuestionButton.textContent =
+        game.lang === "ja"
+            ? "練習する"
+            : "Try the exercise";
+
+    skipQuestionButton.textContent =
+        game.lang === "ja"
+            ? "スキップして思い出に浸る"
+            : "Skip and reminisce";
+
+    replayQuestionModal.classList.remove("hidden");
+}
+
+playQuestionButton.addEventListener("click", () => {
+    replayQuestionModal.classList.add("hidden");
+
+    startQuestionById(
+        pendingReplayQuestionId
+    );
+
+    pendingReplayQuestionId = null;
+});
+
+skipQuestionButton.addEventListener("click", () => {
+    replayQuestionModal.classList.add("hidden");
+
+    pendingReplayQuestionId = null;
+
+    index++;
+    showMessage();
+});
+
+function getUiLanguage() {
+    const storedLanguage = localStorage.getItem("language");
+
+    if (storedLanguage === "ja" || storedLanguage === "en") {
+        return storedLanguage;
+    }
+
+    return null;
+}
+
+function renderMemory() {
+    const language = getUiLanguage();
+    const clearedChapters = getClearedChapters();
+
+    memoryChapterList.innerHTML = "";
+
+    if (language === "ja") {
+        memoryTitle.textContent = "記憶";
+        memoryDescription.textContent = "魔導書に刻まれた記憶";
+        closeMemoryButton.setAttribute("aria-label", "閉じる");
+    } else if (language === "en") {
+        memoryTitle.textContent = "Memory";
+        memoryDescription.textContent =
+            "Memories engraved upon the Grimoire";
+        closeMemoryButton.setAttribute("aria-label", "Close");
+    } else {
+        memoryTitle.textContent = "Memory / 記憶";
+        memoryDescription.textContent =
+            "Memories engraved upon the Grimoire / 魔導書に刻まれた記憶";
+        closeMemoryButton.setAttribute(
+            "aria-label",
+            "Close / 閉じる"
+        );
+    }
+
+    chapters.forEach((chapter) => {
+        const chapterNumber = Number(chapter.chapterNumber);
+        const isCleared = clearedChapters.includes(chapterNumber);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "memory-chapter-button";
+        button.disabled = !isCleared;
+
+        let title;
+
+        if (!isCleared) {
+            title = "???";
+        } else if (language === "ja") {
+            title = chapter.title.ja;
+        } else if (language === "en") {
+            title = chapter.title.en;
+        } else {
+            title = `${chapter.title.en} / ${chapter.title.ja}`;
+        }
+
+        button.innerHTML = `
+            <span class="memory-chapter-number">
+                Chapter ${chapterNumber}
+            </span>
+
+            <span class="memory-chapter-title">
+                〜 ${escapeHtml(title)} 〜
+            </span>
+        `;
+
+        if (isCleared) {
+            button.addEventListener("click", () => {
+                closeMemory();
+                startReplay(chapterNumber);
+            });
+        }
+
+        memoryChapterList.appendChild(button);
+    });
+}
+
+function escapeHtml(text) {
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+}
+
+function openMemory() {
+    closeMenu();
+    renderMemory();
+    memoryModal.classList.remove("hidden");
+}
+
+function closeMemory() {
+    memoryModal.classList.add("hidden");
+}
+
+memoryButton.addEventListener("click", openMemory);
+closeMemoryButton.addEventListener("click", closeMemory);
+
+memoryModal.addEventListener("click", (event) => {
+    if (event.target === memoryModal) {
+        closeMemory();
+    }
+});
+
+function startReplay(chapterNumber) {
+    const selectedChapter = chapters.find(
+        (chapter) =>
+            Number(chapter.chapterNumber) === chapterNumber
+    );
+
+    if (!selectedChapter) {
+        console.error(`Chapter ${chapterNumber} not found.`);
+        return;
+    }
+
+    const savedLanguage = getUiLanguage();
+    const savedPlayerName =
+        localStorage.getItem("playerName") || "";
+
+    game.lang = savedLanguage || "ja";
+    game.playerName = savedPlayerName;
+    game.isReplay = true;
+    game.questionSolved = false;
+    game.currentQuestion = null;
+    game.isBusy = false;
+
+    currentChapter = selectedChapter;
+    chapterIndex = chapters.indexOf(selectedChapter);
+    index = 0;
+
+    titleScreen.classList.add("hidden");
+    contractScreen.classList.add("hidden");
+    codeScreen.classList.add("hidden");
+    toBeContinued.classList.add("hidden");
+
+    gameScreen.classList.remove("hidden");
+
+    showMessage();
+}
+
+const RETURN_STATE_KEY = "grimoireReturnState";
+
+function saveGrimoireReturnState() {
+    let screen = "title";
+
+    if (!contractScreen.classList.contains("hidden")) {
+        screen = "contract";
+    } else if (!codeScreen.classList.contains("hidden")) {
+        screen = "question";
+    } else if (!gameScreen.classList.contains("hidden")) {
+        screen = "story";
+    }
+
+    const state = {
+        chapterIndex,
+        scenarioIndex: index,
+        isReplay: game.isReplay,
+        screen,
+        playerName: game.playerName,
+        language: game.lang,
+        currentQuestion: game.currentQuestion,
+        code: codeInput.value,
+        consoleText: consoleOutput.textContent
+    };
+
+    sessionStorage.setItem(
+        RETURN_STATE_KEY,
+        JSON.stringify(state)
+    );
+}
+
+grimoireLink.addEventListener("click", () => {
+    saveGrimoireReturnState();
+});
+
+function restoreGrimoireReturnState() {
+    const raw = sessionStorage.getItem(RETURN_STATE_KEY);
+
+    if (!raw) {
+        return false;
+    }
+
+    sessionStorage.removeItem(RETURN_STATE_KEY);
+
+    let state;
+
+    try {
+        state = JSON.parse(raw);
+    } catch {
+        return false;
+    }
+
+    if (
+        !Number.isInteger(state.chapterIndex) ||
+        !chapters[state.chapterIndex]
+    ) {
+        return false;
+    }
+
+    chapterIndex = state.chapterIndex;
+    currentChapter = chapters[chapterIndex];
+    index = Number.isInteger(state.scenarioIndex)
+        ? state.scenarioIndex
+        : 0;
+
+    game.lang =
+        state.language === "en"
+            ? "en"
+            : "ja";
+
+    game.playerName =
+        typeof state.playerName === "string"
+            ? state.playerName
+            : "";
+
+    game.isReplay = Boolean(state.isReplay);
+    game.currentQuestion = state.currentQuestion ?? null;
+    game.questionSolved = false;
+    game.isBusy = false;
+
+    titleScreen.classList.add("hidden");
+    contractScreen.classList.add("hidden");
+    gameScreen.classList.add("hidden");
+    codeScreen.classList.add("hidden");
+    messageBox.classList.add("hidden");
+    toBeContinued.classList.add("hidden");
+
+    updateMenuLanguage();
+
+    if (state.screen === "contract") {
+        showContractScreen();
+
+        nameInput.value = game.playerName;
+        return true;
+    }
+
+    if (state.screen === "question") {
+        gameScreen.classList.remove("hidden");
+
+        startQuestionById(state.currentQuestion);
+
+        codeInput.value =
+            typeof state.code === "string"
+                ? state.code
+                : "";
+
+        consoleOutput.textContent =
+            typeof state.consoleText === "string"
+                ? state.consoleText
+                : "";
+
+        updateLineNumbers();
+        return true;
+    }
+
+    if (state.screen === "story") {
+        gameScreen.classList.remove("hidden");
+        showMessage();
+        return true;
+    }
+
+    titleScreen.classList.remove("hidden");
+    return true;
+}
+
+const restoredFromGrimoire =
+    restoreGrimoireReturnState();
+
+if (!restoredFromGrimoire) {
+    updateMenuLanguage();
+}

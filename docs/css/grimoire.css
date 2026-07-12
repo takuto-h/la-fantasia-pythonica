@@ -1,0 +1,272 @@
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #241c12 0%,
+            #0b0907 55%,
+            #000 100%
+        );
+
+    color: #f3e7c0;
+    font-family: serif;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    min-height: 76px;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+
+    border-bottom: 1px solid rgba(200, 169, 107, 0.4);
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    letter-spacing: 0.12em;
+}
+
+.back-button {
+    position: absolute;
+    left: 1.5rem;
+
+    color: #d9c79b;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    color: white;
+}
+
+.language-buttons {
+    width: min(90vw, 500px);
+    margin: 4rem auto;
+    padding: 2rem;
+
+    box-sizing: border-box;
+    text-align: center;
+
+    border: 1px solid #8a6f3e;
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(52, 39, 23, 0.95),
+            rgba(18, 14, 10, 0.98)
+        );
+
+    box-shadow:
+        0 0 35px rgba(200, 169, 107, 0.18),
+        inset 0 0 18px rgba(255, 230, 160, 0.06);
+}
+
+.language-buttons p {
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+
+.language-button-row {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.language-button-row button {
+    min-width: 9rem;
+}
+
+.grimoire-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) 1fr;
+    gap: 1.5rem;
+
+    width: min(1100px, calc(100% - 2rem));
+    margin: 2rem auto;
+}
+
+.page-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.page-list-button {
+    width: 100%;
+    padding: 1rem 1.2rem;
+
+    border: 1px solid rgba(200, 169, 107, 0.45);
+    border-radius: 8px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(48, 36, 21, 0.95),
+            rgba(18, 14, 10, 0.98)
+        );
+
+    color: #ead9ac;
+    font-family: serif;
+    font-size: 1rem;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.page-list-button:hover,
+.page-list-button.active {
+    border-color: #e2bd67;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(83, 58, 26, 0.98),
+            rgba(27, 20, 12, 0.98)
+        );
+
+    box-shadow: 0 0 14px rgba(226, 189, 103, 0.2);
+}
+
+.page-content {
+    min-height: 420px;
+    padding: clamp(1.5rem, 4vw, 3rem);
+
+    box-sizing: border-box;
+
+    border: 1px solid rgba(138, 90, 43, 0.8);
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #e7d3a1,
+            #c9aa72
+        );
+
+    color: #2b1a0f;
+
+    box-shadow:
+        0 0 30px rgba(255, 220, 120, 0.14),
+        inset 0 0 35px rgba(90, 52, 20, 0.15);
+}
+
+.page-content h2 {
+    margin-top: 0;
+    border-bottom: 1px solid rgba(74, 42, 18, 0.35);
+    padding-bottom: 0.8rem;
+}
+
+.page-content pre {
+    overflow-x: auto;
+
+    padding: 1rem;
+
+    border: 1px solid #4d4030;
+    border-radius: 7px;
+
+    background: #16130f;
+    color: #f5e5b7;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.language-switch {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 100;
+
+    display: flex;
+    gap: 0.5rem;
+}
+
+.language-switch button {
+    min-width: 0;
+    width: auto;
+
+    padding: 0.45rem 0.8rem;
+    margin: 0;
+
+    border: 1px solid rgba(200, 169, 107, 0.65);
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(45, 34, 20, 0.95),
+            rgba(16, 13, 10, 0.98)
+        );
+
+    color: #ead9ac;
+
+    font-family: serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+
+    box-shadow:
+        inset 0 0 8px rgba(255, 230, 160, 0.08),
+        0 0 8px rgba(200, 169, 107, 0.14);
+
+    cursor: pointer;
+}
+
+.language-switch button:hover {
+    border-color: #e2bd67;
+    color: #fff3cf;
+
+    box-shadow:
+        inset 0 0 10px rgba(255, 230, 160, 0.14),
+        0 0 14px rgba(226, 189, 103, 0.22);
+}
+
+.language-switch button.active {
+    border-color: #f0cc70;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(90, 64, 29, 0.98),
+            rgba(28, 20, 12, 0.98)
+        );
+
+    color: white;
+
+    box-shadow:
+        0 0 12px rgba(240, 204, 112, 0.28);
+}
+
+@media (max-width: 700px) {
+    .page-header {
+        justify-content: flex-end;
+    }
+
+    .page-header h1 {
+        margin-left: 6rem;
+    }
+
+    .back-button {
+        left: 1rem;
+    }
+
+    .grimoire-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .language-button-row {
+        flex-direction: column;
+    }
+
+    .language-button-row button {
+        width: 100%;
+    }
+}
