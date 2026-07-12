@@ -463,10 +463,24 @@ function executionStatusText(type) {
     return question.executionMessages[type][game.lang];
 }
 
+function formatExecutionError(error) {
+    if (!Number.isInteger(error?.line) || error.line < 1) {
+        return uiText.executionErrors.unknown[game.lang];
+    }
+
+    const messages = uiText.executionErrors;
+    const message = messages[error.kind] ?? messages.generic;
+    return message[game.lang].replace("{line}", error.line);
+}
+
 function formatExecutionResult(result) {
-    return [result.stdout, result.stderr]
+    return [
+        result.stdout,
+        result.stderr,
+        result.error ? formatExecutionError(result.error) : ""
+    ]
         .filter((text) => text !== "")
-        .join(result.stdout && result.stderr ? "\n" : "");
+        .join("\n");
 }
 
 function normalizeOutput(output) {
